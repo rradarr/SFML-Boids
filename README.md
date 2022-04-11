@@ -20,7 +20,14 @@ Boids from a prey group will move away, or flee, from Boids from a predator grou
 
 Boids from predator groups will move towards, or chase, Boids from prey groups.
 
-The behaviour can be further customized by changing the weights attributed to the rules. For example the prey rule can have a much higher weight than any other rule since it’s critical to the figurative survival of a Boid. 
+The behaviour can be further customized by changing the weights attributed to the rules. For example the prey rule can have a much higher weight than any other rule since it’s critical to the figurative survival of a Boid.
+
+## Optimization
+The application implements a spatially aware bin-lattice spatial subdivision data structure. It speeds up the distance query by dividing the area of the simulation into equal, fixed bins.
+
+The Boids are assigned to bins based on their location each frame. When a Boid wants to find others within some radius from it it can check the Boids that are in nearby bins instead of all Boids present in the simulation. Given that the Boids are somewhat distributed in the simulation area and are not all covered by the nearby bins this data structure significantly improves performance.
+
+The data structure uses a three- dimensional table to represent division of Boids by Group, Bin row and Bin column. At each of these coordinates there is an std::list. This data structure was chosen to allow for fast addition and deletion of elements without invalidating pointers and iterators to the elements. Each frame all Boids register to the BinLattice. Based on their coordinates a pointer to the Boid is placed in an according bin. The Boid updates information about it’s current bin coordinates and an iterator to itself in the list in the BoidLatticeData class. Using this information it will be quick to remove the Boid from the current bin if it moves to an area covered by a different one. When a Boid wants to find nearby Boids it iterates over the Boids pointed to by pointers stored in lists in adjacent bins.
 
 ## Control
 The user has control over the simulation by the means of a control panel. It can be toggled using Space. There, he can change parameters of a selected Boid Group: weights of movement rules and where a group is a predator, prey or neither. The user can also click in the simulation area to attract or repel Boids relative to the cursor.
